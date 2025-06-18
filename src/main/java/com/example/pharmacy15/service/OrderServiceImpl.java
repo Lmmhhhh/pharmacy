@@ -7,11 +7,12 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.SqlParameterValue;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.dao.EmptyResultDataAccessException;
 
-
+import java.sql.Types;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -26,7 +27,7 @@ public class OrderServiceImpl implements OrderService {
     public Map<String, Object> registerMultiOrder(MultiOrderRequest request) {
         String itemsJson = toJsonArray(request.getItems(), request.isPrescription());
         try {
-            return jdbc.queryForMap(
+            jdbc.queryForMap(
                     "CALL proc_register_multi_order(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                     request.isPrescription(),
                     request.getPatientName(),
@@ -39,10 +40,48 @@ public class OrderServiceImpl implements OrderService {
                     request.getHospital(),
                     request.getIssuedDate(),
                     request.getSaleDate(),
-                    itemsJson
+                    new SqlParameterValue(Types.VARCHAR, itemsJson)  // JSON 명시적 전달
             );
+
+            String msg;
+            if (request.isPrescription()) {
+                msg = "처방약 주문이 완료되었습니다.";
+            } else {
+                String memberInfo;
+                try {
+                    Integer patientId = jdbc.queryForObject(
+                            "SELECT patient_id FROM patient WHERE patient_name = ? AND RIGHT(phone, 4) = ?",
+                            Integer.class,
+                            request.getPatientName(),
+                            request.getPhone()
+                    );
+                    memberInfo = "(회원 ID: " + patientId + ")";
+                } catch (Exception ignored) {
+                    memberInfo = "(비회원)";
+                }
+                msg = "일반약 주문이 완료되었습니다. " + memberInfo;
+            }
+            return Map.of("message", msg);
+
         } catch (Exception e) {
-            throw new IllegalArgumentException("주문 실패: " + e.getMessage());
+            String raw = Optional.ofNullable(e.getCause()).map(Throwable::getMessage).orElse(e.getMessage());
+            String msg;
+
+            // SIGNAL 메시지 추출
+            if (raw.contains("SQL") && raw.contains("MESSAGE_TEXT")) {
+                int idx = raw.lastIndexOf("MESSAGE_TEXT");
+                msg = raw.substring(idx).replace("MESSAGE_TEXT", "").replaceAll("[:;=]", "").trim();
+            }
+            // SQL 문법 오류 처리
+            else if (raw.contains("bad SQL grammar")) {
+                msg = "서버 내 SQL 호출 형식 오류 (문법 오류)";
+            }
+            // 기본 처리
+            else {
+                msg = raw.contains(":") ? raw.substring(raw.lastIndexOf(":") + 1).trim() : raw;
+            }
+
+            return Map.of("status", 400, "message", "주문 실패: " + msg);
         }
     }
 
@@ -50,7 +89,6 @@ public class OrderServiceImpl implements OrderService {
     public Map<String, Object> handleOtcOrder(OtcOrderRequest request) {
         MultiOrderRequest multi = new MultiOrderRequest();
         multi.setPrescription(false);
-
 
         for (OtcOrderRequest.DrugItem item : request.getItems()) {
             Integer drugId = jdbc.queryForObject(
@@ -68,7 +106,6 @@ public class OrderServiceImpl implements OrderService {
             }
         }
 
-        // 회원 여부만 확인 (insert X)
         try {
             jdbc.queryForObject(
                     "SELECT patient_id FROM patient WHERE patient_name = ? AND RIGHT(phone, 4) = ?",
@@ -76,19 +113,16 @@ public class OrderServiceImpl implements OrderService {
                     request.getName(),
                     request.getPhoneLast4()
             );
-        } catch (Exception ignored) {
-            // 회원이 아니면 patient_id = null 그대로 사용
-        }
+        } catch (Exception ignored) {}
 
         multi.setPatientName(request.getName());
         multi.setPhone(request.getPhoneLast4());
         multi.setSaleDate(request.getSaleDate());
 
-        // 직접 입력된 drugName을 그대로 사용
         List<MultiOrderRequest.DrugItem> items = request.getItems().stream()
                 .map(otc -> {
                     MultiOrderRequest.DrugItem item = new MultiOrderRequest.DrugItem();
-                    item.setDrugName(otc.getDrugName());  // 더 이상 DB 조회 안 함
+                    item.setDrugName(otc.getDrugName());
                     item.setQuantity(otc.getQuantity());
                     return item;
                 })
@@ -133,7 +167,6 @@ public class OrderServiceImpl implements OrderService {
 
         for (MultiOrderRequest.DrugItem item : items) {
             String name = item.getDrugName().trim();
-            System.out.println("🔍 drugName 요청 값: [" + name + "]");
 
             Integer drugId;
             try {
