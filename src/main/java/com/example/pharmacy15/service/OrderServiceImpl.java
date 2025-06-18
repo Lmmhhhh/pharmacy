@@ -67,7 +67,7 @@ public class OrderServiceImpl implements OrderService {
         multi.setPhone(request.getPhoneLast4());
         multi.setSaleDate(request.getSaleDate());
 
-        // ✅ 직접 입력된 drugName을 그대로 사용
+        // 직접 입력된 drugName을 그대로 사용
         List<MultiOrderRequest.DrugItem> items = request.getItems().stream()
                 .map(otc -> {
                     MultiOrderRequest.DrugItem item = new MultiOrderRequest.DrugItem();
@@ -115,8 +115,8 @@ public class OrderServiceImpl implements OrderService {
         List<Map<String, Object>> converted = new ArrayList<>();
 
         for (MultiOrderRequest.DrugItem item : items) {
-            String name = item.getDrugName().trim();  // ✅ 공백 제거
-            System.out.println("🔍 drugName 요청 값: [" + name + "]");  // ✅ 콘솔 디버깅
+            String name = item.getDrugName().trim();
+            System.out.println("🔍 drugName 요청 값: [" + name + "]");
 
             Integer drugId;
             try {

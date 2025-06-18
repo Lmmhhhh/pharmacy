@@ -4,8 +4,11 @@ import com.example.pharmacy15.domain.Drug;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.core.BeanPropertyRowMapper;
+
 import org.springframework.stereotype.Repository;
 import com.example.pharmacy15.repository.DrugRepository;
+
 
 import java.util.Optional;
 import java.util.List;
@@ -44,5 +47,13 @@ public class DrugRepositoryImpl implements DrugRepository {
     public List<Drug> findAll() {
         String sql = "SELECT * FROM drug";
         return jdbc.query(sql, drugRowMapper);
+    }
+
+    @Override
+    public List<Drug> searchByKeyword(String keyword) {
+        String sql = "SELECT * FROM drug WHERE name LIKE ? OR company LIKE ? OR efficacy LIKE ?";
+        return jdbc.query(sql,
+                new Object[]{"%" + keyword + "%", "%" + keyword + "%", "%" + keyword + "%"},
+                new BeanPropertyRowMapper<>(Drug.class));
     }
 }

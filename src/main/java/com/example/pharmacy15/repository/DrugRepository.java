@@ -9,4 +9,6 @@ public interface DrugRepository {
     Optional<Drug> findById(int drugId);
 
     List<Drug> findAll(); //test용
+
+    List<Drug> searchByKeyword(String keyword);
 }
