@@ -5,7 +5,7 @@ import java.time.LocalDate;
 
 @Getter @Setter
 public class PurchaseRequest {
-    private int drugId;
+    private String drugName;
     private int quantity;
     private int unitPrice;
     private LocalDate purchaseDate;
