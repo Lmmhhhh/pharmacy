@@ -93,10 +93,16 @@ public class UpdateController {
             // 2. 재고 복원 (order_drug -> purchase)
             String restoreSql = """
                 UPDATE purchase p
-                JOIN order_drug od ON p.drug_id = od.drug_id
-                SET p.remaining_quantity = p.remaining_quantity + od.sale_quantity
-                WHERE od.order_id = ?
+                JOIN (
+                    SELECT purchase_id, SUM(sale_quantity) AS sum_qty
+                    FROM order_drug
+                    WHERE order_id = ?
+                    GROUP BY purchase_id
+                ) od_sum
+                ON p.purchase_id = od_sum.purchase_id
+            SET p.remaining_quantity = p.remaining_quantity + od_sum.sum_qty
             """;
+
             jdbc.update(restoreSql, orderId);
 
             // 3. order_drug, orders 삭제

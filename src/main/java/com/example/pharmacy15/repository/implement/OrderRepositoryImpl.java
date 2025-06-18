@@ -1,7 +1,7 @@
 package com.example.pharmacy15.repository.implement;
 
 import com.example.pharmacy15.domain.Order;
-import com.example.pharmacy15.repository.OrderRepository;
+import com.example.pharmacy15.repository.iface.OrderRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;

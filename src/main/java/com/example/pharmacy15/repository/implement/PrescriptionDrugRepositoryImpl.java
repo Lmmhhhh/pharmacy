@@ -3,7 +3,7 @@ package com.example.pharmacy15.repository.implement;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
-import com.example.pharmacy15.repository.PrescriptionDrugRepository;
+import com.example.pharmacy15.repository.iface.PrescriptionDrugRepository;
 
 @Repository
 @RequiredArgsConstructor

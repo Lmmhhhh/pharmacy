@@ -1,7 +1,7 @@
 package com.example.pharmacy15.repository.implement;
 
 import com.example.pharmacy15.domain.Patient;
-import com.example.pharmacy15.repository.PatientRepository;
+import com.example.pharmacy15.repository.iface.PatientRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;

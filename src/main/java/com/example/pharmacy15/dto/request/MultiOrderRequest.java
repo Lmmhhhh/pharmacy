@@ -1,4 +1,3 @@
-// File: com/example/pharmacy15/dto/request/MultiOrderRequest.java
 package com.example.pharmacy15.dto.request;
 
 import lombok.Getter;

@@ -1,7 +1,7 @@
 package com.example.pharmacy15.controller;
 
 import com.example.pharmacy15.domain.Drug;
-import com.example.pharmacy15.repository.DrugRepository;
+import com.example.pharmacy15.repository.iface.DrugRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 

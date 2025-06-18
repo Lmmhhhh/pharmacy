@@ -1,4 +1,4 @@
-package com.example.pharmacy15.repository;
+package com.example.pharmacy15.repository.iface;
 
 import com.example.pharmacy15.domain.Patient;
 

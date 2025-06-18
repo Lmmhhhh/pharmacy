@@ -1,6 +1,6 @@
 package com.example.pharmacy15.repository.implement;
 
-import com.example.pharmacy15.repository.OrderDrugRepository;
+import com.example.pharmacy15.repository.iface.OrderDrugRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;

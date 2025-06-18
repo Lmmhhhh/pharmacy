@@ -7,7 +7,7 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 
 import org.springframework.stereotype.Repository;
-import com.example.pharmacy15.repository.DrugRepository;
+import com.example.pharmacy15.repository.iface.DrugRepository;
 
 
 import java.util.Optional;
