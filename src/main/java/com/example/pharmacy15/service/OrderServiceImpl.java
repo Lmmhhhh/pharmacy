@@ -51,6 +51,23 @@ public class OrderServiceImpl implements OrderService {
         MultiOrderRequest multi = new MultiOrderRequest();
         multi.setPrescription(false);
 
+
+        for (OtcOrderRequest.DrugItem item : request.getItems()) {
+            Integer drugId = jdbc.queryForObject(
+                    "SELECT drug_id FROM drug WHERE name = ?",
+                    Integer.class,
+                    item.getDrugName()
+            );
+            String prescribeType = jdbc.queryForObject(
+                    "SELECT prescribe_type FROM drug WHERE drug_id = ?",
+                    String.class,
+                    drugId
+            );
+            if ("처방".equals(prescribeType)) {
+                throw new IllegalArgumentException("처방약은 일반 구매할 수 없습니다: " + item.getDrugName());
+            }
+        }
+
         // 회원 여부만 확인 (insert X)
         try {
             jdbc.queryForObject(
