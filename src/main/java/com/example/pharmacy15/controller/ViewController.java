@@ -34,10 +34,19 @@ public class ViewController {
     }
 
     // 회원 복약 히스토리
-    @GetMapping("/patient-history/{id}")
-    public ResponseEntity<List<Map<String, Object>>> patientHistory(@PathVariable int id) {
-        String sql = "SELECT * FROM view_patient_history WHERE patient_id = ?";
-        return ResponseEntity.ok(jdbc.queryForList(sql, id));
+    @GetMapping("/patient-history")
+    public ResponseEntity<List<Map<String, Object>>> patientHistoryByNameAndPhone(
+            @RequestParam String name,
+            @RequestParam String phoneLast4) {
+
+        String sql = """
+        SELECT *
+        FROM view_patient_history
+        WHERE patient_name = ?
+          AND RIGHT(phone, 4) = ?
+    """;
+
+        return ResponseEntity.ok(jdbc.queryForList(sql, name, phoneLast4));
     }
 
     // 키워드로 약품 조회
